@@ -191,15 +191,8 @@ def play(args):
                 actions = policy(obs.detach(), hist_encoding=True, scandots_latent=depth_latent)
             
         obs, _, rews, dones, infos = env.step(actions.detach())
-        if args.web:
-            web_viewer.render(fetch_results=True,
-                        step_graphics=True,
-                        render_all_camera_sensors=True,
-                        wait_for_page_load=True)
             
-        print("time:", env.episode_length_buf[env.lookat_id].item() / 50, 
-              "cmd vx", env.commands[env.lookat_id, 0].item(),
-              "actual vx", env.base_lin_vel[env.lookat_id, 0].item(), )
+
         
         id = env.lookat_id
         

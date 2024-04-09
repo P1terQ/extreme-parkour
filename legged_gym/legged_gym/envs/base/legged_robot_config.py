@@ -38,7 +38,7 @@ class LeggedRobotCfg(BaseConfig):
         load_student_config = False
         mask_priv_obs = False
     class env:
-        num_envs = 6144
+        num_envs = 4096 #6144
 
         n_scan = 132
         n_priv = 3+3 +3
@@ -51,7 +51,7 @@ class LeggedRobotCfg(BaseConfig):
         num_actions = 12
         env_spacing = 3.  # not used with heightfields/trimeshes 
         send_timeouts = True # send time out information to the algorithm
-        episode_length_s = 20 # episode length in seconds
+        episode_length_s = 20  #!20 # episode length in seconds
         obs_type = "og"
 
 
@@ -165,10 +165,12 @@ class LeggedRobotCfg(BaseConfig):
         selected = False # select a unique terrain type and pass all arguments
         terrain_kwargs = None # Dict of arguments for selected terrain
         max_init_terrain_level = 5 # starting curriculum state
+        
         terrain_length = 18.
         terrain_width = 4
+        
         num_rows= 10 # number of terrain rows (levels)  # spreaded is benifitiall !
-        num_cols = 40 # number of terrain cols (types)
+        num_cols = 10 # number of terrain cols (types)
         
         terrain_dict = {"smooth slope": 0., 
                         "rough slope up": 0.0,
@@ -184,19 +186,22 @@ class LeggedRobotCfg(BaseConfig):
                         "platform": 0.,
                         "large stairs up": 0.,
                         "large stairs down": 0.,
-                        "parkour": 0.2,
-                        "parkour_hurdle": 0.2,
-                        "parkour_flat": 0.2,
-                        "parkour_step": 0.2,
-                        "parkour_gap": 0.2,
-                        "demo": 0.0,}
+                        "parkour": 0.0,
+                        "parkour_hurdle": 0.0,  #! test step
+                        "parkour_flat": 0.0,
+                        "parkour_step": 0.0,
+                        "parkour_gap": 1.0,
+                        "demo": 0.0,
+                        "test_step": 0.0,
+                        "leeps_log": 0.0,
+                        "leeps_tunnel": 0.0}
         terrain_proportions = list(terrain_dict.values())
         
         # trimesh only:
         slope_treshold = 1.5# slopes above this threshold will be corrected to vertical surfaces
         origin_zero_z = True
 
-        num_goals = 8
+        num_goals = 4   #! 8
 
     class commands:
         curriculum = False

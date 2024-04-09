@@ -274,7 +274,7 @@ class LeggedRobot(BaseTask):
             self.gym.clear_lines(self.viewer)
             # self._draw_height_samples()
             self._draw_goals()
-            self._draw_feet()
+            # self._draw_feet()
             if self.cfg.depth.use_camera:
                 window_name = "Depth Image"
                 cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
@@ -290,6 +290,9 @@ class LeggedRobot(BaseTask):
     def check_termination(self):
         """ Check if environments need to be reset
         """
+        self.contact_termination_buf = torch.any(torch.norm(self.contact_forces[:, self.termination_contact_indices, :], dim=-1) > 1., dim=1)
+        self.time_out_buf = (self.episode_length_buf > self.max_episode_length) 
+        
         self.reset_buf = torch.zeros((self.num_envs, ), dtype=torch.bool, device=self.device)
         roll_cutoff = torch.abs(self.roll) > 1.5
         pitch_cutoff = torch.abs(self.pitch) > 1.5
@@ -298,6 +301,9 @@ class LeggedRobot(BaseTask):
 
         self.time_out_buf = self.episode_length_buf > self.max_episode_length # no terminal reward for time-outs
         self.time_out_buf |= reach_goal_cutoff
+
+        self.reset_buf |= self.contact_termination_buf
+        self.reset_buf |= self.time_out_buf
 
         self.reset_buf |= self.time_out_buf
         self.reset_buf |= roll_cutoff
@@ -454,7 +460,7 @@ class LeggedRobot(BaseTask):
         print("*"*80)
         print("Start creating ground...")
         if mesh_type in ['heightfield', 'trimesh']:
-            self.terrain = Terrain(self.cfg.terrain, self.num_envs)
+            self.terrain = Terrain(self.cfg.terrain, self.num_envs,self.gym, self.sim)
         if mesh_type=='plane':
             self._create_ground_plane()
         elif mesh_type=='heightfield':
@@ -678,8 +684,17 @@ class LeggedRobot(BaseTask):
         
         dis_to_origin = torch.norm(self.root_states[env_ids, :2] - self.env_origins[env_ids, :2], dim=1)
         threshold = self.commands[env_ids, 0] * self.cfg.env.episode_length_s
-        move_up =dis_to_origin > 0.8*threshold
-        move_down = dis_to_origin < 0.4*threshold
+        
+        
+        # print(threshold)
+        # move_up =dis_to_origin > 0.7*threshold
+        # move_down = dis_to_origin < 0.4*threshold
+        move_up = dis_to_origin > 6
+        move_down = dis_to_origin < 4
+
+        # print("dis_to_origin:", dis_to_origin)
+        # print("threshold:", threshold)
+
 
         self.terrain_levels[env_ids] += 1 * move_up - 1 * move_down
         # # Robots that solve the last level are sent to a random one
